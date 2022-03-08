@@ -13,7 +13,6 @@ try {
 
     const tasks = await getTasks(listId);
     console.log(tasks);
-
 }
 catch (err) {
     console.log(err);
