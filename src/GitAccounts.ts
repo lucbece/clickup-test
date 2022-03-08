@@ -9,8 +9,10 @@ export const gitFinder = async ( name: string ) => {
         const accounts = await getTasks(gitHubListId);
         const account = accounts.find((account:any) => account.name === name)
         
-        const gitInfo: any[] = account.custom_fields?.find((field:any) => field.name === 'GITHHUB').value
-        console.log(gitInfo)
+        const gitHubInfo: string = account.custom_fields?.find((field:any) => field.name === "GITHUB") || "";
+        console.log("GitHub Info: \n", gitHubInfo)
+        const gitLabInfo: string = account.custom_fields?.find((field:any) => field.name === "GITLAB") || "";
+        console.log("GitLab Info: \n", gitLabInfo)
     }
     catch (err) {
         console.log(err);

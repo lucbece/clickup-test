@@ -1,6 +1,5 @@
 import axios from 'axios';
 
-// const authToken: string = JSON.stringify(process.env.PERSONAL_ACCESS_TOKEN);
 const authToken: string = process.env.PERSONAL_ACCESS_TOKEN || '';
 axios.defaults.headers.common['Authorization'] =  authToken;
 axios.defaults.headers.common['Content-Type'] = 'application/json';
