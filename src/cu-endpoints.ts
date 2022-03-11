@@ -25,7 +25,14 @@ export const getListId = async (folderId: string, listName: string) => {
   return list.id
 }
 
-export const getTasks = async (listId: string) => {
-  const response = await axios.get(`${baseUrl}list/${listId}/task?archived=false`);
-  return response.data?.tasks;
+export const getTasks = async (listId: string, taskName?: string) => {
+  const response = await axios.get(`${baseUrl}list/${listId}/task?statuses%5B%5D=to do&archived=false`);
+  let list: any;
+  
+  if (taskName !== undefined) {
+    list = response.data.tasks?.filter((list2:any) => list2.name === taskName);
+  } else {
+    list = response.data?.tasks;
+  }  
+  return list;
 }

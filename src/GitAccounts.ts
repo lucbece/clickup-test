@@ -6,7 +6,7 @@ console.log(gitHubListId)
 
 export const gitFinder = async ( name: string ) => {
     try {
-        const accounts = await getTasks(gitHubListId);
+        const accounts = await getTasks(gitHubListId, "");
         const account = accounts.find((account:any) => account.name === name)
         
         const gitHubInfo: string = account.custom_fields?.find((field:any) => field.name === "GITHUB") || "";
