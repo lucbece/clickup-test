@@ -25,15 +25,10 @@ export const getListId = async (folderId: string, listName: string) => {
   return list.id
 }
 
-export const getTasks = async (listId: string, status: string, taskName?: string) => {
+export const getTasks_assigned = async (listId: string, status: string, taskName?: string) => {
   // get only for a user: Quien, from custom_fields
-  // email : juan.antonellini@nan-labs.com
-  let user_who = `,{"field_id":"4d5b2614-3513-47e6-a697-5013093eb4c0","operator":"ANY","value":["43101092"]}`
-
-  // get only Vacaciones type (value 0) from config_fields
-  let only_vacaciones = `&custom_fields=[{"field_id":"b048a332-8d5f-44c2-bbd4-7c8b1bfe7a13", "operator":"=", "value":0}`+user_who+`]`;
-  
-  const response = await axios.get(`${baseUrl}list/${listId}/task?statuses%5B%5D=in progress`+only_vacaciones);
+     
+  const response = await axios.get(`${baseUrl}list/${listId}/task?statuses%5B%5D=to do`);
   let list: any;
   
   if (taskName !== undefined) {
@@ -43,4 +38,29 @@ export const getTasks = async (listId: string, status: string, taskName?: string
   }
   
   return list;
+}
+
+export const getTasks_requested = async (listId: string, status: string, taskName?: string) => {
+  // get only for a user: Quien, from custom_fields
+  // email : juan.antonellini@nan-labs.com
+  let user_who = `,{"field_id":"4d5b2614-3513-47e6-a697-5013093eb4c0","operator":"ANY","value":["3127971"]}`
+
+  // get only Vacaciones type (value 0) from config_fields
+  let only_vacaciones = `&custom_fields=[{"field_id":"b048a332-8d5f-44c2-bbd4-7c8b1bfe7a13", "operator":"=", "value":0}]`;
+  
+  const response = await axios.get(`${baseUrl}list/${listId}/task?statuses%5B%5D=complete`+only_vacaciones);  
+  let list: any;
+  
+  if (taskName !== undefined) {
+    list = response.data.tasks?.filter((list2:any) => list2.name === taskName);
+  } else {
+    list = response.data?.tasks;
+  }
+  
+  return list;
+}
+
+export const getTasks = async (listId: string) => {
+  const response = await axios.get(`${baseUrl}list/${listId}/task?archived=false`);
+  return response.data?.tasks;
 }

@@ -5,7 +5,7 @@ import { gitFinder } from './GitAccounts';
 // user who request your holidays info
 //const userName: string = 'carolina.sabatini@nan-labs.com';
 // this is the task name, but must be use email
-const userName: string = "Luli - Vacaciones";
+const userName: string ='';
 
 // path to access data
 let spaceName: string = "NaNLABS's Space"

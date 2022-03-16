@@ -14,8 +14,8 @@ class Holidays {
 
 class RequestHolidays {
     // start_day and end_day in Unix time format
-    start_day: number;
-    end_day: number;
+    start_day: Date;
+    end_day: Date;
     no_labor_days: number;    
     url_task: string;
     holiday_year: string;
@@ -23,8 +23,8 @@ class RequestHolidays {
     
     constructor(start_day: number, end_day: number, no_labor_days: number, 
         url_task: string, holiday_year: string) {
-        this.start_day = start_day;
-        this.end_day = end_day;
+        this.start_day = new Date(start_day);
+        this.end_day = new Date(end_day);
         this.no_labor_days = no_labor_days;
         this.url_task = url_task;
         this.holiday_year = holiday_year;
@@ -33,10 +33,9 @@ class RequestHolidays {
 
     // calculate total requested holidays
     // must include saturday and sunday ...
-    get_total_days = () => {
-        let end_date = new Date(this.end_day);
-        let start_date = new Date(this.start_day);
-        let partial_dates = getDifferenceInDays(end_date, start_date);
+    get_total_days = () => {        
+        let partial_dates = getDifferenceInDays(this.end_day, this.start_day);
+        if (partial_dates === 0) { partial_dates = +1; };
         return (partial_dates - this.no_labor_days)
     }
 }
@@ -160,7 +159,7 @@ export function get_requested_holidays(tasks: any)
                 //console.log(value);
                 let resp = get_custom_fields_from_req_holidays(value);
                 if (resp) {
-                    no_labor_days = resp[0];
+                    no_labor_days = get_no_labor_days(resp[0]);
                     holiday_year = get_holiday_period(resp[1]);
                 }
             }
@@ -193,6 +192,22 @@ function get_holiday_period(value:number) {
     return holi_year;
 }
 
+// get no labor days from clickUp definition of custom field: "Cuántos días feriados hay en el medio?"
+function get_no_labor_days(value:number) {
+    let no_labor = 0;
+    switch (value) {
+        case 0: no_labor = 1;
+            break;
+        case 1: no_labor = 2;
+            break;
+        case 2: no_labor = 3;
+            break;
+        case 3: no_labor = 0;
+            break;        
+    }
+    return no_labor;
+}
+
 // Requested Holidays - iterate over 'custom fields' array in clickup tasks list
 // to retrieve : 'feriados en medio' and 'periodo vacacional'
 function get_custom_fields_from_req_holidays(data: any) { 
@@ -210,8 +225,7 @@ function get_custom_fields_from_req_holidays(data: any) {
             }                 
             
             if (key === 'value')
-            {
-                console.log(`${key} ${value} ${descrip}`);
+            {                
                 if (typeof value === "number") {            
                     if (value >= 0) {
                         if (descrip === 'Cuántos días feriados hay en el medio?') {

@@ -1,4 +1,4 @@
-import { getSpaceId, getFolderId, getListId, getTasks } from "./cu-endpoints";
+import { getSpaceId, getFolderId, getListId, getTasks_requested, getTasks_assigned } from "./cu-endpoints";
 import { get_holidays, get_requested_holidays } from "./holidays";
 
 const mainFunction = async (userName: string, spaceName: string, folderName: string, 
@@ -11,24 +11,21 @@ const mainFunction = async (userName: string, spaceName: string, folderName: str
         const folderId = await getFolderId(spaceId, folderName);
         console.log(folderId)
 
-        /*
-        // get available holidays
+        
+        // get assigned holidays
         const listId = await getListId(folderId, listName);
         console.log(listId)
-        const tasks = await getTasks(listId, status_avb_holi, userName);
-        //console.log(tasks)        
-        const holidays = get_holidays(tasks)
-        console.log(holidays)
-        */
-
+        const tasks = await getTasks_assigned(listId, status_avb_holi);              
+        const holidays = get_holidays(tasks);
+        console.log(holidays);        
+        
         // get requested holidays
         const listId2 = await getListId(folderId, listName2);
-        console.log(listId2)
-        const tasks2 = await getTasks(listId2, status_avb_holi);
-        console.log(tasks2)        
-        const req_holidays = get_requested_holidays(tasks2)
-        console.log(req_holidays)
-        console.log(req_holidays.length)
+        console.log(listId2);
+        const tasks2 = await getTasks_requested(listId2, status_avb_holi);           
+        const req_holidays = get_requested_holidays(tasks2);
+        console.log(req_holidays);
+        console.log(req_holidays.length);        
     }
     catch (err) {
         console.log(err);
