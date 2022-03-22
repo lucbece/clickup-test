@@ -1,15 +1,14 @@
 export class TotalHolidays {
     user: string;
-    holidays_old_scheme: number;
-    holidays_new_scheme: number;
+    holidays_old_scheme!: number;
+    holidays_new_scheme!: number;
     requestedHolidays!: Array<RequestHolidays>;
     assignedHolidays!: Array<Holidays>;
 
-    constructor(user: string, holidays_old_scheme: number, holidays_new_scheme: number, 
-        requestedHolidays?: Array<RequestHolidays>, assignedHolidays?: Array<Holidays>){
+    constructor(user: string, requestedHolidays?: Array<RequestHolidays>, assignedHolidays?: Array<Holidays>){
         this.user = user;
-        this.holidays_new_scheme = holidays_new_scheme;
-        this.holidays_old_scheme = holidays_old_scheme;
+        //this.holidays_new_scheme = holidays_new_scheme;
+        //this.holidays_old_scheme = holidays_old_scheme;
         if (typeof requestedHolidays !== 'undefined') {
             this.requestedHolidays = requestedHolidays;
         } else {
@@ -31,6 +30,38 @@ export class TotalHolidays {
     addAsHoliday(year: string, consecutive: number, business: number) {
         let oAssHoli = new Holidays(year, consecutive, business);
         this.assignedHolidays.push(oAssHoli);
+    }
+
+    calculateTotalHolidays() {        
+        let assig_holi_old = 0;
+        let assig_holi_new = 0;
+        let req_holi_old = 0;
+        let req_holi_new = 0;
+        const current_year = new Date().getFullYear();
+
+        // sum assigned holidays until (assigned year < current year)
+        this.assignedHolidays.forEach(x => {
+            if (((parseInt(x.year)) < current_year) ) {
+                if (parseInt(x.year) <= 2019 ) {
+                    assig_holi_old += x.consecutive_days;
+                } else {
+                    assig_holi_new += x.business_days;
+                }
+            }
+        })
+
+        // sum requested holidays (complete and in progress)
+        this.requestedHolidays.forEach(x => {
+            if (parseInt(x.holiday_year) <= 2019 ) {
+                req_holi_old += x.total_days;
+            } else {
+                req_holi_new += x.total_days;
+            }
+        })
+
+        // calculate availability holidays
+        this.holidays_old_scheme = assig_holi_old - req_holi_old;
+        this.holidays_new_scheme = assig_holi_new - req_holi_new;
     }
 
     ArraySerialized(obj_list: Array<any>) {  

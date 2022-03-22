@@ -29,9 +29,16 @@ const mainFunction = async (userName: string, spaceName: string, folderName: str
         console.log(req_holidays.length);  
         
         // test a new complex object TotalHolidays
-        let oTotalHolidays = new TotalHolidays('455666', 14, 20);        
+        let oTotalHolidays = new TotalHolidays('455666'); 
+        oTotalHolidays.addRqHoliday(1646179200, 1646352000, 0, "http:google.com/01", "2019");       
         oTotalHolidays.addRqHoliday(1646179200, 1646352000, 0, "http:google.com/11", "2020");
         oTotalHolidays.addRqHoliday(1646179200, 1646352000, 0, "http:google.com/22", "2021");
+        oTotalHolidays.addAsHoliday("2019", 14, 10);
+        oTotalHolidays.addAsHoliday("2020", 14, 10);
+        oTotalHolidays.addAsHoliday("2021", 14, 10);
+        oTotalHolidays.addAsHoliday("2022", 21, 15);
+        oTotalHolidays.calculateTotalHolidays();
+
         console.log(oTotalHolidays.serialize())
     }
     catch (err) {
