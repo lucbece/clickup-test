@@ -1,4 +1,60 @@
-import { start } from "repl";
+export class TotalHolidays {
+    user: string;
+    holidays_old_scheme: number;
+    holidays_new_scheme: number;
+    requestedHolidays!: Array<RequestHolidays>;
+    assignedHolidays!: Array<Holidays>;
+
+    constructor(user: string, holidays_old_scheme: number, holidays_new_scheme: number, 
+        requestedHolidays?: Array<RequestHolidays>, assignedHolidays?: Array<Holidays>){
+        this.user = user;
+        this.holidays_new_scheme = holidays_new_scheme;
+        this.holidays_old_scheme = holidays_old_scheme;
+        if (typeof requestedHolidays !== 'undefined') {
+            this.requestedHolidays = requestedHolidays;
+        } else {
+            this.requestedHolidays = Array<RequestHolidays>();
+        }
+        if (typeof assignedHolidays !== 'undefined') {
+            this.assignedHolidays = assignedHolidays;
+        } else {
+            this.assignedHolidays = Array<Holidays>();
+        }
+    }
+
+    addRqHoliday(start_day: number, end_day: number, no_labor_days: number, 
+        url_task: string, holiday_year: string) {
+        let oReqHoli = new RequestHolidays(start_day, end_day, no_labor_days, url_task, holiday_year);
+        this.requestedHolidays.push(oReqHoli);
+    }
+
+    addAsHoliday(year: string, consecutive: number, business: number) {
+        let oAssHoli = new Holidays(year, consecutive, business);
+        this.assignedHolidays.push(oAssHoli);
+    }
+
+    ArraySerialized(obj_list: Array<any>) {  
+        let new_array = Array<any>();
+        obj_list.forEach(x => {
+            new_array.push(x.serialize());
+        });
+        return new_array;
+    }
+
+    private toObject() {
+        return {
+            user: this.user,
+            holidays_new_scheme: this.holidays_new_scheme.toString(),
+            holidays_old_scheme: this.holidays_old_scheme.toString(),
+            requestedHolidays: this.ArraySerialized(this.requestedHolidays),
+            assignedHolidays: this.ArraySerialized(this.assignedHolidays),
+        }
+    }
+
+    serialize() {        
+        return JSON.stringify(this.toObject());
+    }
+}
 
 class Holidays {
     consecutive_days: number;
@@ -10,10 +66,21 @@ class Holidays {
         this.consecutive_days = consecutive;
         this.business_days = business;
     }
+
+    private toObject() {
+        return {
+            consecutive_days: this.consecutive_days.toString(),
+            business_days: this.business_days.toString(),
+            year: this.year,
+        }
+    }
+
+    serialize() {
+        return JSON.stringify(this.toObject());
+    }
 }
 
-class RequestHolidays {
-    // start_day and end_day in Unix time format
+class RequestHolidays {    
     start_day: Date;
     end_day: Date;
     no_labor_days: number;    
@@ -32,18 +99,49 @@ class RequestHolidays {
     }
 
     // calculate total requested holidays
-    // must include saturday and sunday ...
+    // not include saturday and sunday when holiday_year is >= 2020
     get_total_days = () => {        
-        let partial_dates = getDifferenceInDays(this.end_day, this.start_day);
-        if (partial_dates === 0) { partial_dates = +1; };
-        return (partial_dates - this.no_labor_days)
+        let partial_dates = (this.end_day.getDate() - this.start_day.getDate())+1;
+        // if start_day and end_day are the same, add 1 day
+        //if (partial_dates === 0) { partial_dates = +1; };
+
+        // if holiday_year >= 2020, find if any day are saturday and/or sunday, and substract        
+        let sat_sun = 0;
+        let aux_date = new Date(this.start_day);
+        if (parseInt(this.holiday_year) >= 2020) {             
+            while (aux_date < this.end_day) {
+                if (aux_date.getDay() === 0 || aux_date.getDay() === 6) sat_sun = +1;
+                aux_date.setDate( aux_date.getDate()+1 );
+            }
+        } else {
+            // holiday_year < 2020, no_labor_days has no effect if the user put in the form
+            this.no_labor_days = 0;
+        }
+
+        return (partial_dates - (this.no_labor_days + sat_sun))
+    }
+
+    private toObject() {
+        return {
+            start_day: this.start_day,
+            end_day: this.end_day,
+            no_labor_days: this.no_labor_days.toString(),   
+            url_task: this.url_task,
+            holiday_year: this.holiday_year,
+            total_days: this.total_days.toString(),
+        }
+    }
+
+    serialize() {        
+        return JSON.stringify(this.toObject());
     }
 }
 
+/*
 function getDifferenceInDays(date1:any, date2:any) {
     const diffInMs = Math.abs(date1 - date2);
     return diffInMs / (1000 * 60 * 60 * 24);
-}
+} */
 
 // Get Available Holidays from ClickUp - Licencias folder - Dias disponibles list
 export function get_holidays(tasks: any) 
@@ -62,6 +160,7 @@ export function get_holidays(tasks: any)
             {
                 let year_holiday_list = get_custom_fields_days(value);
                 if (year_holiday_list) {
+                    console.log(year_holiday_list.serialize())
                     list.push(year_holiday_list);
                 }
             }               
@@ -167,6 +266,7 @@ export function get_requested_holidays(tasks: any)
         })
         // create request holiday obj and add to the list
         let req_holiday_obj = new RequestHolidays(start_day, end_day, no_labor_days, task_url, holiday_year);
+        console.log(req_holiday_obj.serialize())
         list.push(req_holiday_obj);
     });    
     return list;
